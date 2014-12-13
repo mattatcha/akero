@@ -2,8 +2,8 @@ package model
 
 import "time"
 
-//Tennant a user of our service
-type Tennant struct {
+//Tenant a user of our service
+type Tenant struct {
 	ID          int64
 	Name        string
 	Description string
@@ -14,7 +14,6 @@ type Tennant struct {
 // an item.
 type UnitOfMeasure struct {
 	ID          int64
-	TennantID   int64
 	Name        string
 	Description string
 }
@@ -22,20 +21,9 @@ type UnitOfMeasure struct {
 // ItemGroup is used to group similar products together.
 type ItemGroup struct {
 	ID          int64
-	TennantID   int64
 	Name        string
 	Description string
 }
-
-// TransactionType is used to record what type a transaction is.
-// I will need to work on getting a more thought out list.
-// Maybe store in DB?
-// type TransactionType struct {
-// 	ID          int64
-// 	TennantID   int64
-// 	Name        string
-// 	Description string
-// }
 
 // TransactionType is used to record what type a transaction is.
 // I will need to work on getting a more thought out list.
@@ -49,22 +37,20 @@ const (
 
 // Contact could be a Vendor or a Supplier (or even both)
 type Contact struct {
-	ID        int64
-	TennantID int64
-	Name      string
-	Vendor    bool
-	Supplier  bool
+	ID       int64
+	Name     string
+	Vendor   bool
+	Supplier bool
 }
 
 // Item is a part or an end product
 type Item struct {
 	ID              int64
-	TennantID       int64
-	ItemGroupID     int64
+	ItemGroupID     int64 `db:"item_group_id"`
 	ItemGroup       ItemGroup
 	Code            string
 	Description     string
-	UnitOfMeasureID int64 // Should be a Type
+	UnitOfMeasureID int64 `db:"unit_of_measure_id"`
 	UnitOfMeasure   UnitOfMeasure
 	Comments        string
 	Component       bool
@@ -74,9 +60,8 @@ type Item struct {
 // BillOfMaterial is a list of items can be assembled to
 // create an end product.
 type BillOfMaterial struct {
-	ID        int64
-	TennantID int64
-	ItemID    int64
+	ID     int64
+	ItemID int64
 
 	//
 	Item     Item
@@ -86,7 +71,6 @@ type BillOfMaterial struct {
 // BOMLine line item for BilBillOfMaterial
 type BOMLine struct {
 	ID               int64
-	TennantID        int64
 	BillOfMaterialID int64
 	ItemID           int64
 	Item             Item
@@ -98,26 +82,24 @@ type BOMLine struct {
 //  source of truth for Inventory counts and just
 // about everyting else that deals with an item.
 type Transaction struct {
-	ID        int64
-	TennantID int64
-	ItemID    int64
-	Item      Item
-	Qty       int64
-	Comments  string
-	Date      time.Time
-	TypeID    int64
-	Type      TransactionType
+	ID       int64
+	ItemID   int64
+	Item     Item
+	Qty      int64
+	Comments string
+	Date     time.Time
+	TypeID   int64
+	Type     TransactionType
 }
 
 // Purchase is a document that commits to purchasing items.
 type Purchase struct {
 	ID         int64
-	TennantID  int64
 	SupplierID int64
 
-	Date       time.Time
-	Approved   bool
-	ApprovedBy string // Should be a persons name
+	Date     time.Time
+	Approved bool
+	//ApprovedBy string // Should be a persons name
 	ApprovedOn time.Time
 
 	//
@@ -126,19 +108,17 @@ type Purchase struct {
 
 // PurchaseLine describes line for a Purchase
 type PurchaseLine struct {
-	ID        int64
-	TennantID int64
-	ItemID    int64
-	Item      Item
-	Qty       int64
-	UnitCost  int64
+	ID       int64
+	ItemID   int64
+	Item     Item
+	Qty      int64
+	UnitCost int64
 }
 
 // Receipt is used to receieve
 // items in that were on a PO.
 type Receipt struct {
 	ID         int64
-	TennantID  int64
 	PurchaseID int64
 	Purchase   Purchase
 	Date       time.Time
@@ -148,10 +128,10 @@ type Receipt struct {
 
 // ReceiptLine defines a line item for a Receipt
 type ReceiptLine struct {
-	ID        int64
-	TennantID int64
-	ReceiptID int64
-	ItemID    int64
-	Item      Item
-	Qty       int64
+	ID             int64
+	ReceiptID      int64
+	PurchaseLineID int64
+	ItemID         int64
+	Item           Item
+	Qty            int64
 }
